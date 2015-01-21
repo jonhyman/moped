@@ -203,6 +203,7 @@ describe Moped::Node, replica_set: true do
 
       before do
         node.stub(:connect).and_raise(potential_reconfiguration_error)
+        node.stub(:connected?).and_return(false)
       end
 
       context "and the reconfigation is of a replica set" do
@@ -240,6 +241,7 @@ describe Moped::Node, replica_set: true do
 
       before do
         node.stub(:connect).and_raise(potential_reconfiguration_error)
+        node.stub(:connected?).and_return(false)
       end
 
       context "and the reconfigation has a connection failure" do
