@@ -27,7 +27,7 @@ describe Moped::Connection do
 
       before do
         connection.connect
-        connection.instance_variable_get(:@sock).close
+        connection.__send__(:sock).close
       end
 
       it "returns false" do

@@ -34,7 +34,7 @@ module Moped
     #
     # @since 1.0.0
     def alive?
-      connected? ? @sock.alive? : false
+      connected? ? sock.alive? : false
     end
 
     # Connect to the server defined by @host, @port without timeout @timeout.
@@ -47,7 +47,7 @@ module Moped
     # @since 1.0.0
     def connect
       credentials.clear
-      @sock = if !!options[:ssl]
+      self.sock = if !!options[:ssl]
         Socket::SSL.connect(host, port, timeout)
       else
         Socket::TCP.connect(host, port, timeout)
@@ -63,7 +63,7 @@ module Moped
     #
     # @since 1.0.0
     def connected?
-      !!@sock
+      !!sock
     end
 
     # Disconnect from the server.
@@ -75,10 +75,10 @@ module Moped
     #
     # @since 1.0.0
     def disconnect
-      @sock.close
+      sock.close
     rescue
     ensure
-      @sock = nil
+      self.sock = nil
     end
 
     # Initialize the connection.
@@ -100,6 +100,15 @@ module Moped
       @options = options
       @sock = nil
       @request_id = 0
+      @sock_key = "[moped]:#{host}:#{port}"
+    end
+
+    def sock=(val)
+      Thread.current[@sock_key] = val
+    end
+
+    def sock
+      Thread.current[@sock_key]
     end
 
     # Read from the connection.
@@ -217,11 +226,11 @@ module Moped
     #
     # @since 1.3.0
     def with_connection
-      if @sock.nil? || !@sock.alive?
+      if sock.nil? || !sock.alive?
         connect
         apply_credentials(@original_credentials || {})
       end
-      yield @sock
+      yield sock
     end
   end
 end
