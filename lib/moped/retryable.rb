@@ -28,9 +28,18 @@ module Moped
     def with_retry(cluster, retries = cluster.max_retries, &block)
       begin
         block.call
-      rescue Errors::ConnectionFailure, Errors::PotentialReconfiguration => e
+      rescue Errors::ConnectionFailure, Errors::PotentialReconfiguration, Errors::OperationFailure => e
         raise e if e.is_a?(Errors::PotentialReconfiguration) &&
           ! (e.message.include?("not master") || e.message.include?("Not primary"))
+
+        # Monkey patch for https://jira.mongodb.org/browse/SERVER-20829
+        if e.is_a?(Errors::OperationFailure)
+          if e.message.include?("RUNNER_DEAD")
+            Loggable.warn("  MOPED:", "[jontest] got RUNNER_DEAD on #{cluster.nodes.inspect}, retries is #{retries}", "n/a")
+          else
+            raise e
+          end
+        end
 
         if retries > 0
           Loggable.info("  MOPED:", "Retrying connection attempt #{retries} more time(s), nodes is #{cluster.nodes.inspect}, seeds are #{cluster.seeds.inspect}, cluster is #{cluster.inspect}. Error backtrace is #{e.backtrace}.", "n/a")
