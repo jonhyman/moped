@@ -29,7 +29,8 @@ module Moped
       begin
         block.call
       rescue Errors::ConnectionFailure, Errors::PotentialReconfiguration, Errors::OperationFailure => e
-        raise e if e.is_a?(Errors::PotentialReconfiguration) &&
+
+        raise e if e.instance_of?(Errors::PotentialReconfiguration) &&
           ! (e.message.include?("not master") || e.message.include?("Not primary"))
 
         # Monkey patch for https://jira.mongodb.org/browse/SERVER-20829
