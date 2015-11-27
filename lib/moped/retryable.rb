@@ -36,7 +36,7 @@ module Moped
         # Monkey patch for https://jira.mongodb.org/browse/SERVER-20829
         if e.is_a?(Errors::OperationFailure)
           if e.message.include?("RUNNER_DEAD")
-            Loggable.warn("  MOPED:", "[jontest] got RUNNER_DEAD on #{cluster.nodes.inspect}, retries is #{retries}", "n/a")
+            Loggable.info("  MOPED:", "[jontest] got RUNNER_DEAD on #{cluster.nodes.inspect}, retries is #{retries}", "n/a")
           else
             raise e
           end
